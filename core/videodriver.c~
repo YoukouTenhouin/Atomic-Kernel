@@ -1,9 +1,0 @@
-#include <driver/video/videodriver.h>
-#include <types.h>
-
-static s32i PositionX = 0,PositionY = 0;
-static u8i* VideoRam = (u8i*) 0xb0000;
-
-void
-WriteChar(char A)
-{
