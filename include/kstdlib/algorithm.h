@@ -1,4 +1,4 @@
-/* types.h --> 定义了常用的类型 */
+/* algorithm.h --> 某些简单的算法(shi) */
 /* Copyright (c) 1998 著作权由Chapaev所有。著作权人保留一切权利。
  * 
  * 这份授权条款，在使用者符合以下三条件的情形下，授予使用者使用及再散播本
@@ -21,17 +21,11 @@
  * 于替代商品或劳务之购用、使用损失、资料损失、利益损失、业务中断等等），
  * 不负任何责任，即在该种使用已获事前告知可能会造成此类损害的情形下亦然。*/
 
-#ifndef __ATOMIC_TYPES_H__
-#define __ATOMIC_TYPES_H__
+#ifndef __ATOMIC_KSTDLIB_ALGORITHM_H__
+#define __ATOMIC_KSTDLIB_ALGORITHM_H__
 
-typedef unsigned long u64i;
-typedef signed long s64i;
-typedef unsigned int u32i;
-typedef signed int s32i;
-typedef unsigned short u16i;
-typedef signed short s16i;
-typedef unsigned char u8i;
-typedef signed char s8i;
-typedef char* string;
+#include <types.h>
 
-#endif //__ATOMIC_TYPES_H__
+char* NumberToString(s32i,s32i);
+
+#endif 

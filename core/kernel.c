@@ -32,5 +32,9 @@ kmain( void* mdb,u32i magic )
 	{
 		while(1);
 	}
+	ClearScreen();
+	SetColor(BLACK,BRIGHT_WHITE);
+	WriteString("Hello!\n");
+	WriteNumber(12345,10);
 }
 

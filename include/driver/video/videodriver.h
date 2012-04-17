@@ -21,9 +21,24 @@
  * 于替代商品或劳务之购用、使用损失、资料损失、利益损失、业务中断等等），
  * 不负任何责任，即在该种使用已获事前告知可能会造成此类损害的情形下亦然。*/
 
-ifndef __ATOMIC_DRIVER_VIDEODRIVER_H__
+#ifndef __ATOMIC_DRIVER_VIDEODRIVER_H__
 #define __ATOMIC_DRIVER_VIDEODRIVER_H__
 
+#include <types.h>
+
+typedef enum COLOUR_TAG {
+
+	BLACK, BLUE, GREEN, CYAN, RED, MAGENTA, BROWN, WHITE,
+	GRAY, LIGHT_BLUE, LIGHT_GREEN, LIGHT_CYAN,
+	LIGHT_RED, LIGHT_MAGENTA, YELLOW, BRIGHT_WHITE
+} COLOUR;
+
+void WriteString(char*);
 void WriteChar(char);
-void WriteDec(s32i);
-void 
+void WriteNumber(s32i,s32i);
+void SetColor(COLOUR,COLOUR);
+void NewLine();
+void ScrollScreen();
+void ClearScreen();
+
+#endif
