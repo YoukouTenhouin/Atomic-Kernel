@@ -1,4 +1,4 @@
-/* kernel.c --> 内核的入口 */
+/* isr.h --> 定义了寄存器结构体 */
 /* Copyright (c) 1998 著作权由Chapaev所有。著作权人保留一切权利。
  * 
  * 这份授权条款，在使用者符合以下三条件的情形下，授予使用者使用及再散播本
@@ -21,23 +21,17 @@
  * 于替代商品或劳务之购用、使用损失、资料损失、利益损失、业务中断等等），
  * 不负任何责任，即在该种使用已获事前告知可能会造成此类损害的情形下亦然。*/
 
-#include <multiboot.h>
+#ifndef __ATOMIC_ISR_H__
+#define __ATOMIC_ISR_H__
+
 #include <types.h>
-#include <kstdlib/kio.h>
 
-void
-kmain( void* mdb,u32i magic )
+typedef struct Registers
 {
-	if( magic != 0x2BADB002 )
-	{
-		while(1);
-	}
-	ClearScreen();
-	SetColor(BLACK,BRIGHT_WHITE);
-	WriteString("Hello!\n");
-	WriteNumber(12345,10);
-	while(1);
-	asm volatile ("int $0x3");
-	asm volatile ("int $0x4");
-}
+	u32i ds;
+	u32i edi,esi,ebp,esp,ebx,edx,ecx,eax;
+	u32i IntNumber,ErrorCode;
+	u32i eip,cs,eflags,useresp,ss;
+} RegistersType;
 
+#endif

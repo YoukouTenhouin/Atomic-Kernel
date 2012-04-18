@@ -11,3 +11,8 @@ GDTFlush:
 	jmp 0x08:.flush
 .flush:
 	ret
+[GLOBAL IDTFlush]
+IDTFlush: 
+	mov eax,[esp+4]
+	lidt [eax]
+	ret
