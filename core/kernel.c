@@ -24,6 +24,7 @@
 #include <multiboot.h>
 #include <types.h>
 #include <kstdlib/kio.h>
+#include <descriptor_tables.h>
 
 void
 kmain( void* mdb,u32i magic )
@@ -32,6 +33,7 @@ kmain( void* mdb,u32i magic )
 	{
 		while(1);
 	}
+	InitDescriptorTables();
 	ClearScreen();
 	SetColor(BLACK,BRIGHT_WHITE);
 	WriteString("Hello!\n");

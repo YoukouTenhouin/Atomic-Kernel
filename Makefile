@@ -19,3 +19,4 @@ all:$(SOURCES)
 	$(LD) $(LDFLAGS) -o kernel $(SOURCES)
 clean:
 	rm -rf *.o
+
