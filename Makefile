@@ -1,6 +1,6 @@
 vpath %.c core
 vpath %.s core
-CC=clang
+CC=gcc
 CXX=g++
 LD=ld
 AS=nasm
