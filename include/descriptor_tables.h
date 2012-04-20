@@ -30,7 +30,7 @@ struct GDTEntryStruct
 {
 	u16i LimitLow;
 	u16i BaseLow;
-	u16i BaseMiddle;
+	u8i BaseMiddle;
 	u8i Access;
 	u8i Granularity;
 	u8i BaseHigh;

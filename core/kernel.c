@@ -38,7 +38,7 @@ kmain( void* mdb,u32i magic )
 	SetColor(BLACK,BRIGHT_WHITE);
 	WriteString("Hello!\n");
 	WriteNumber(12345,10);
-	while(1);
+	NewLine();
 	asm volatile ("int $0x3");
 	asm volatile ("int $0x4");
 }
