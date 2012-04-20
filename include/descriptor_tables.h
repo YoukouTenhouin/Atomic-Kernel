@@ -22,7 +22,7 @@
  * 不负任何责任，即在该种使用已获事前告知可能会造成此类损害的情形下亦然。*/
 
 #ifndef __ATOMIC_DESCRIPTOR_TABLES_H__
-#define __ATOMIC_DESCRIPTOR_TABLES_H__
+#define __ATOMIC_DESCRIPTOR_TABLES_H__y
 
 #include <types.h>
 

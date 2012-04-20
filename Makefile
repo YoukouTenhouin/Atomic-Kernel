@@ -19,4 +19,5 @@ all:$(SOURCES)
 	$(LD) $(LDFLAGS) -o kernel $(SOURCES)
 clean:
 	rm -rf *.o
+	find ./ -name '*~' -exec rm {} \;
 
