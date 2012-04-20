@@ -25,6 +25,7 @@
 #include <types.h>
 #include <kstdlib/kio.h>
 #include <descriptor_tables.h>
+#include <timer.h>
 
 void
 kmain( void* mdb,u32i magic )
@@ -39,7 +40,7 @@ kmain( void* mdb,u32i magic )
 	WriteString("Hello!\n");
 	WriteNumber(12345,10);
 	NewLine();
-	asm volatile ("int $0x3");
-	asm volatile ("int $0x4");
+	asm volatile ("sti");
+	InitTimer(50);
 }
 

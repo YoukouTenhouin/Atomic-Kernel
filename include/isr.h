@@ -34,4 +34,7 @@ typedef struct Registers
 	u32i eip,cs,eflags,useresp,ss;
 } RegistersType;
 
+typedef void (*ISRType) (RegistersType);
+void RegisterInterruptHandler(u8i,ISRType);
+
 #endif
