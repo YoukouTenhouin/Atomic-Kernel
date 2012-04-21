@@ -8,9 +8,9 @@ u32i Tick = 0;
 static void TimerCallback(RegistersType Regs)
 {
 	Tick++;
-	WriteString("Tick:");
-	WriteNumber(Tick,10);
-	NewLine();
+//	WriteString("Tick:");
+//	WriteNumber(Tick,10);
+//	NewLine();
 }
 
 void InitTimer(u32i Frequency)

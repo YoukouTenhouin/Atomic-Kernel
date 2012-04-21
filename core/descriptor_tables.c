@@ -1,6 +1,7 @@
 #include <descriptor_tables.h>
 #include <kstdlib/string.h>
 #include <assembly.h>
+#include <isr.h>
 
 extern void GDTFlush(u32i);
 extern void IDTFlush(u32i);
@@ -16,11 +17,13 @@ GDTPointerType GDTPointer;
 IDTEntryType IDTEntries[256];
 IDTPointerType IDTPointer;
 
+extern ISRType InterruptHandlers[];
 
 void InitDescriptorTables()
 {
 	InitGDT();
 	InitIDT();
+	memset(&InterruptHandlers,0,sizeof(ISRType)*256);
 }
 
 static void InitGDT()
@@ -52,7 +55,16 @@ static void InitIDT()
 	IDTPointer.Limit = sizeof(IDTEntryType)*256-1;
 	IDTPointer.Base = (u32i)&IDTEntries;
 	memset(&IDTEntries,0,sizeof(IDTEntryType)*256);
-	outb(0x20,0x11);
+	outb(0x20, 0x11);
+	outb(0xA0, 0x11);
+	outb(0x21, 0x20);
+	outb(0xA1, 0x28);
+	outb(0x21, 0x04);
+	outb(0xA1, 0x02);
+	outb(0x21, 0x01);
+	outb(0xA1, 0x01);
+	outb(0x21, 0x0);
+	outb(0xA1, 0x0);
 	outb(0xa0,0x11);
 	outb(0x21,0x20);
 	outb(0xa1,0x28);

@@ -27,6 +27,8 @@
 #include <descriptor_tables.h>
 #include <timer.h>
 
+void InitKeyboard();
+
 void
 kmain( void* mdb,u32i magic )
 {
@@ -40,7 +42,9 @@ kmain( void* mdb,u32i magic )
 	WriteString("Hello!\n");
 	WriteNumber(12345,10);
 	NewLine();
+	InitTimer(1000);
 	asm volatile ("sti");
-	InitTimer(50);
+	//InitKeyboard();
+	while(1);
 }
 
