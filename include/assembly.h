@@ -1,4 +1,5 @@
-/* isr.h --> 定义了寄存器结构体 */
+/* assembly.h --> 汇编宏 */
+/* 估计还要改 */
 /* Copyright (c) 1998 著作权由Chapaev所有。著作权人保留一切权利。
  * 
  * 这份授权条款，在使用者符合以下三条件的情形下，授予使用者使用及再散播本
@@ -20,21 +21,20 @@
  * 任何直接性、间接性、偶发性、特殊性、惩罚性或任何结果的损害（包括但不限
  * 于替代商品或劳务之购用、使用损失、资料损失、利益损失、业务中断等等），
  * 不负任何责任，即在该种使用已获事前告知可能会造成此类损害的情形下亦然。*/
-
-#ifndef __ATOMIC_ISR_H__
-#define __ATOMIC_ISR_H__
+#ifndef __ATOMIC_ASSEMBLY_H__
+#define __ATOMIC_ASSEMBLY_H__
 
 #include <types.h>
 
-typedef struct Registers
-{
-	u32i ds;
-	u32i edi,esi,ebp,esp,ebx,edx,ecx,eax;
-	u32i IntNumber,ErrorCode;
-	u32i eip,cs,eflags,useresp,ss;
-} RegistersType;
+#define outb(port,value) __asm__ ( \
+		"outb %%al, %%dx\n\t"::"al"(value),"dx"(port))
 
-typedef void (*ISRType) (RegistersType);
-void RegisterInterruptHandler(u8i,ISRType);
+#define inb(port) (__extension__({		\
+	unsigned char __res; \
+	__asm__ ("inb \%%dx, %%al\n\t"		\
+	 :"=a"(__res) \
+	 :"dx"(port)); \
+	__res;}))
+
 
 #endif

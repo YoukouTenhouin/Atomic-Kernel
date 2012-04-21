@@ -23,6 +23,8 @@
 
 #include <descriptor_tables.h>
 #include <kstdlib/string.h>
+#include <assembly.h>
+#include <isr.h>
 
 extern void GDTFlush(u32i);
 extern void IDTFlush(u32i);
@@ -38,11 +40,13 @@ GDTPointerType GDTPointer;
 IDTEntryType IDTEntries[256];
 IDTPointerType IDTPointer;
 
+extern ISRType InterruptHandlers[];
 
 void InitDescriptorTables()
 {
 	InitGDT();
 	InitIDT();
+	memset(&InterruptHandlers,0,sizeof(ISRType)*256);
 }
 
 static void InitGDT()
@@ -74,6 +78,16 @@ static void InitIDT()
 	IDTPointer.Limit = sizeof(IDTEntryType)*256-1;
 	IDTPointer.Base = (u32i)&IDTEntries;
 	memset(&IDTEntries,0,sizeof(IDTEntryType)*256);
+	outb(0x20, 0x11);
+	outb(0xA0, 0x11);
+	outb(0x21, 0x20);
+	outb(0xA1, 0x28);
+	outb(0x21, 0x04);
+	outb(0xA1, 0x02);
+	outb(0x21, 0x01);
+	outb(0xA1, 0x01);
+	outb(0x21, 0x0);
+	outb(0xA1, 0x0);
 	IDTSetGate(0,(u32i)isr0,0x08,0x8e);
 	IDTSetGate(1,(u32i)isr1,0x08,0x8e);
 	IDTSetGate(2,(u32i)isr2,0x08,0x8e);
@@ -106,6 +120,22 @@ static void InitIDT()
 	IDTSetGate(29,(u32i)isr29,0x08,0x8e);
 	IDTSetGate(30,(u32i)isr30,0x08,0x8e);
 	IDTSetGate(31,(u32i)isr31,0x08,0x8e);
+	IDTSetGate(32,(u32i)irq0,0x08,0x8e);
+	IDTSetGate(33,(u32i)irq1,0x08,0x8e);
+	IDTSetGate(34,(u32i)irq2,0x08,0x8e);
+	IDTSetGate(35,(u32i)irq3,0x08,0x8e);
+	IDTSetGate(36,(u32i)irq4,0x08,0x8e);
+	IDTSetGate(37,(u32i)irq5,0x08,0x8e);
+	IDTSetGate(38,(u32i)irq6,0x08,0x8e);
+	IDTSetGate(39,(u32i)irq7,0x08,0x8e);
+	IDTSetGate(40,(u32i)irq8,0x08,0x8e);
+	IDTSetGate(41,(u32i)irq9,0x08,0x8e);
+	IDTSetGate(42,(u32i)irq10,0x08,0x8e);
+	IDTSetGate(43,(u32i)irq11,0x08,0x8e);
+	IDTSetGate(44,(u32i)irq12,0x08,0x8e);
+	IDTSetGate(45,(u32i)irq13,0x08,0x8e);
+	IDTSetGate(46,(u32i)irq14,0x08,0x8e);
+	IDTSetGate(47,(u32i)irq15,0x08,0x8e);
 	IDTFlush((u32i)&IDTPointer);
 }
 
