@@ -26,15 +26,7 @@
 
 #include <types.h>
 
-#define outb(port,value) __asm__ ( \
-		"outb %%al, %%dx\n\t"::"al"(value),"dx"(port))
-
-#define inb(port) (__extension__({		\
-	unsigned char __res; \
-	__asm__ ("inb \%%dx, %%al\n\t"		\
-	 :"=a"(__res) \
-	 :"dx"(port)); \
-	__res;}))
-
+void outb(u16i,u8i);
+u8i inb(u16i);
 
 #endif

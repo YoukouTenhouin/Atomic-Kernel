@@ -44,7 +44,7 @@ kmain( void* mdb,u32i magic )
 	NewLine();
 	InitTimer(1000);
 	asm volatile ("sti");
-	//InitKeyboard();
+	InitKeyboard();
 	while(1);
 }
 
