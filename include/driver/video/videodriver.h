@@ -43,5 +43,6 @@ void ClearScreen();
 void GetPosition(s32i*,s32i*);
 void SetPosition(s32i,s32i);
 void UpdateCursor();
+void MoveCursor(s32i);
 
 #endif

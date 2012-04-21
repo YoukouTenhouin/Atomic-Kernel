@@ -39,12 +39,21 @@ kmain( void* mdb,u32i magic )
 	InitDescriptorTables();
 	ClearScreen();
 	SetColor(BLACK,BRIGHT_WHITE);
-	WriteString("Hello!\n");
+	WriteString("This is Atomic Kernel 12213A\n");
 	WriteNumber(12345,10);
 	NewLine();
+	WriteString("Starting Timer...");
 	InitTimer(1000);
-	asm volatile ("sti");
+	SetColor(BLACK,GREEN);
+	WriteString("Done.\n");
+	SetColor(BLACK,BRIGHT_WHITE);
+	WriteString("Starting Keyboard...");
 	InitKeyboard();
+	SetColor(BLACK,GREEN);
+	WriteString("Done.\n");
+	SetColor(BLACK,BRIGHT_WHITE);
+	asm volatile ("sti");
+	WriteString("Now you can type something.\n");
 	while(1);
 }
 

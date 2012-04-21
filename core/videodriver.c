@@ -21,10 +21,10 @@
  * 于替代商品或劳务之购用、使用损失、资料损失、利益损失、业务中断等等），
  * 不负任何责任，即在该种使用已获事前告知可能会造成此类损害的情形下亦然。*/
 
-
 #include <driver/video/videodriver.h>
 #include <types.h>
 #include <kstdlib/algorithm.h>
+#include <assembly.h>
 
 static s32i PositionX = 0,PositionY = 0;
 static u8i* VideoRam = (u8i*) 0xb8000;
@@ -133,4 +133,14 @@ void UpdateCursor()
 	outb(0x3d5,((PositionX+PositionY*80)>>8)&0xff);
 	outb(0x3d4,0x0f);
 	outb(0x3d5,((PositionX+PositionY*80))&0xff);
+}
+
+void MoveCursor(s32i Offset)
+{
+	PositionX += Offset;
+	if ( PositionX < 0 ) {
+		PositionY--;
+		PositionX = 80 - PositionX;
+	}
+
 }
