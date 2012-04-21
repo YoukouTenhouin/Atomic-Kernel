@@ -45,12 +45,12 @@ ISRHandler(RegistersType Regs)
 void
 IRQHandler(RegistersType Regs)
 {
-	if (Regs.IntNumber >= 40) {
-		outb(0xa0,0x20);
-	}
-	outb(0x20,0x20);
 	if (InterruptHandlers[Regs.IntNumber] != 0) {
 			ISRType Handler = InterruptHandlers[Regs.IntNumber];
 			Handler(Regs);
 	}
+	if (Regs.IntNumber >= 40) {
+		outb(0xa0,0x20);
+	}
+	outb(0x20,0x20);
 }

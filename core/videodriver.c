@@ -76,13 +76,26 @@ WriteString(char* String)
 void
 WriteChar(char A)
 {
-	if ( A == '\n' )
+	switch(A) {
+	case '\n':
 		NewLine();
-	else {
-	VideoRam[PositionY*80*2+PositionX*2] = A;
-	VideoRam[PositionY*80*2+PositionX*2+1] = Color;
-	PositionX++;
+		break;
+	case '\b':
+		PositionX--;
+		WriteChar(0);
+		PositionX--;
+		break;
+	case '\t':
+		for( int i = 0 ; i != 8 ; i++ )
+			WriteChar(' ');
+		break;
+	default:
+		VideoRam[PositionY*80*2+PositionX*2] = A;
+		VideoRam[PositionY*80*2+PositionX*2+1] = Color;
+		PositionX++;
+		break;
 	}
+	UpdateCursor();
 }
 
 void
@@ -100,4 +113,24 @@ NewLine()
 	} else {
 		ScrollScreen();
 	}
+}
+
+void GetPosition(s32i* X,s32i* Y)
+{
+	*X=PositionX;
+	*Y=PositionY;
+}
+
+void SetPosition(s32i X,s32i Y)
+{
+	PositionX=X;
+	PositionY=Y;
+}
+
+void UpdateCursor()
+{
+	outb(0x3d4,0x0e);
+	outb(0x3d5,((PositionX+PositionY*80)>>8)&0xff);
+	outb(0x3d4,0x0f);
+	outb(0x3d5,((PositionX+PositionY*80))&0xff);
 }
