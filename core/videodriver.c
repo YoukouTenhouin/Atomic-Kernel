@@ -59,10 +59,54 @@ ScrollScreen()
 	}
 }
 
+void WriteHex(u32i n) //直接从jamesm那复制的
+{
+    s32i tmp;
+
+   WriteString("0x");
+
+    char noZeroes = 1;
+
+    int i;
+    for (i = 28; i > 0; i -= 4)
+    {
+	    tmp = (n >> i) & 0xF;
+        if (tmp == 0 && noZeroes != 0)
+        {
+            continue;
+        }
+    
+        if (tmp >= 0xA)
+        {
+            noZeroes = 0;
+            WriteChar (tmp-0xA+'a' );
+        }
+        else
+        {
+            noZeroes = 0;
+            WriteChar( tmp+'0' );
+        }
+    }
+  
+    tmp = n & 0xF;
+    if (tmp >= 0xA)
+    {
+        WriteChar (tmp-0xA+'a');
+    }
+    else
+    {
+        WriteChar (tmp+'0');
+    }
+
+}
+
 void
 WriteNumber(s32i Number,s32i Base)
 {
-	WriteString(NumberToString(Number,Base));
+	if ( Base == 16 )
+		WriteHex(Number);
+ 	else
+		WriteString(NumberToString(Number,Base));
 }
 
 void

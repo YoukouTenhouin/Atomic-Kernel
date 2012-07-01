@@ -35,11 +35,10 @@ void RegisterInterruptHandler(u8i n,ISRType Handler)
 void
 ISRHandler(RegistersType Regs)
 {
-	WriteString("Interrupt:");
-	WriteNumber(Regs.IntNumber,10);
-	WriteString("  ");
-	WriteNumber(Regs.IntNumber,16);
-	WriteString("\n");
+	if (InterruptHandlers[Regs.IntNumber] != 0){
+		ISRType Handler = InterruptHandlers[Regs.IntNumber];
+		Handler(Regs);
+	}
 }
 
 void

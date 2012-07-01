@@ -1,30 +1,33 @@
-ENTRY (loader)
+/* Link.ld -- Linker script for the kernel - ensure everything goes in the */
+/*            Correct place.  */
+/*            Original file taken from Bran's Kernel Development */
+/*            tutorials: http://www.osdever.net/bkerndev/index.php. */
 
+ENTRY(loader)
 SECTIONS
 {
-    . = 0x00100000;
 
-    .text ALIGN (0x1000) :
+    .text 0x100000 :
     {
+        code = .; _code = .; __code = .;
         *(.text)
+        . = ALIGN(4096);
     }
 
-    .rodata ALIGN (0x1000) :
+    .data :
     {
-        *(.rodata*)
-    }
-
-    .data ALIGN (0x1000) :
-    {
+        data = .; _data = .; __data = .;
         *(.data)
+        *(.rodata)
+        . = ALIGN(4096);
     }
 
     .bss :
     {
-        sbss = .;
-        *(COMMON)
+        bss = .; _bss = .; __bss = .;
         *(.bss)
-        ebss = .;
+        . = ALIGN(4096);
     }
-}
 
+    end = .; _end = .; __end = .;
+}
