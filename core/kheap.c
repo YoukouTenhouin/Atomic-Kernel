@@ -22,10 +22,28 @@
  * 不负任何责任，即在该种使用已获事前告知可能会造成此类损害的情形下亦然。*/
 
 #include <kheap.h>
-
+//#include <heaplist.h>
+#include <kcommon.h>
+#include <kstdlib/kio.h>
 extern u32i end;
 u32i PlacementAddress = (u32i) &end;
 
+//HeapList Kernel;
+//HeapList KFree;
+
+/*void
+KHeapInit()
+{
+	Kernel = NewHeapList();
+	KFree = NewHeapList();
+}
+*/
+u32i AllocMemory(u32i Size)
+{
+	u32i Temp = PlacementAddress;
+	PlacementAddress += Size;
+	return Temp;
+}
 
 u32i KmallocIntenal(u32i Size,s32i Align,u32i* Physical)
 {
@@ -35,9 +53,7 @@ u32i KmallocIntenal(u32i Size,s32i Align,u32i* Physical)
 	} if ( Physical ) {
 		*Physical = PlacementAddress;
 	}
-	u32i Temp = PlacementAddress;
-	PlacementAddress += Size;
-	return Temp;
+	return AllocMemory(Size);
 }
 
 u32i KmallocAligned(u32i Size)
@@ -59,3 +75,25 @@ u32i Kmalloc(u32i Size)
 {
 	return KmallocIntenal(Size,0,0);
 }
+
+/*void Free(u32i Address,u32i Size)
+{
+	HeapListEntry* ToDelete = FindHeapListEntry(Alloced,Address);
+	DeleteHeapListEntry(ToDelete)
+	if (Address == PlacementAddress - Size){
+		PlacementAddress -= Size;
+	}
+	else{
+		HeapListEntry* ToInsert = AllocMemory(sizeof(ToInsert));
+		ToInsert->IsHead = false;
+		InsertHeapListEntry(Free,ToInsert);
+	}
+}
+
+void KFree(void* Pointer)
+{
+	HeapListEntry* Temp = FindHeapListEntry(Alloced,Address);
+	if (Temp == NULL) return;
+	return Free(Temp->MenRecord.Address,Temp->MenRecord.Size);
+}
+*/

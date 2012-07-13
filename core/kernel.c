@@ -21,17 +21,96 @@
  * 于替代商品或劳务之购用、使用损失、资料损失、利益损失、业务中断等等），
  * 不负任何责任，即在该种使用已获事前告知可能会造成此类损害的情形下亦然。*/
 
-#include <multiboot.h>
+//#include <multiboot.h>
 #include <types.h>
 #include <kstdlib/kio.h>
 #include <descriptor_tables.h>
 #include <timer.h>
 #include <paging.h>
 
+typedef struct {
+	u32i MemoryInfo : 1;
+	u32i BootDevice : 1;
+	u32i CmdLine : 1;
+	u32i Mods : 1;
+	u32i Syms : 2;
+	u32i MMap : 1;
+	u32i Drives : 1;
+	u32i ConfigTable : 1;
+	u32i BootLoaderName : 1;
+	u32i ApmTable : 1;
+	u32i VBE : 1;
+	u32i VoidFlags : 21;
+} MultibootInfoFlags;
+
+typedef struct
+{
+	u32i Lower;
+	u32i Upper;
+} MultibootMemtype;
+
+typedef struct
+{
+	u8i Drive;
+	u8i Part[3];
+} MultibootBootDeviceType;
+
+typedef struct
+{
+	u32i ModStart;
+	u32i ModEnd;
+	u32i String;
+	u32i Reserved;
+} MultibootModStruct;
+
+typedef struct
+{
+	u32i ModsCount;
+	MultibootModStruct* ModsAddress;
+} MultibootModsType;
+
+typedef struct
+{
+	u32i Length;
+	u32i Address;
+} MultibootMMapType;
+
+typedef struct
+{
+	u32i Length;
+	u32i Address;
+} MultibootDrivesType;
+
+typedef struct
+{
+	u32i ControlInfo;
+	u32i ModeInfo;
+	u32i Mode;
+	u32i InterfaceSeg;
+	u32i InterfaceOffset;
+	u32i InterfaceLength;
+} MultibootVBEMode;
+
+typedef struct
+{
+	MultibootInfoFlags Flags;
+	MultibootMemtype MemInfo;
+	MultibootBootDeviceType BootDevice;
+	u32i CmdLine;
+	MultibootModsType Mods;
+	u32i Syms[3];
+	MultibootMMapType MMap;
+	MultibootDrivesType Drives;
+	u32i ConfigTable;
+	u32i BootLoaderName;
+	u32i ApmTable;
+	MultibootVBEMode VBE;
+} MultibootInfoStruct;
+
 void InitKeyboard();
 
 void
-kmain( void* mdb,u32i magic )
+kmain(MultibootInfoStruct* MInfo,u32i magic )
 {
 	if( magic != 0x2BADB002 )
 	{
@@ -40,23 +119,24 @@ kmain( void* mdb,u32i magic )
 	InitDescriptorTables();
 	ClearScreen();
 	SetColor(BLACK,BRIGHT_WHITE);
-	WriteString("This is Atomic Kernel 12213A\n");
-	WriteNumber(12345,10);
-	NewLine();
-	WriteString("Starting Timer...");
+	KPrintf("This is Atomic Kernel 12213A\nTest for KPrintf:\n");
+	KPrintf("Dec:%d\nHex:%x\nStr:%s\nChar:%c\n",12345,0xc0ffee,"Hello World",'a');
+	if (MInfo->Flags.MemoryInfo)
+		KPrintf("Memory:Lower %x Upper %x\n",
+			MInfo->MemInfo.Lower,MInfo->MemInfo.Upper);
+	if (MInfo->Flags.BootLoaderName)
+		KPrintf("BootLoader:%s\n",MInfo->BootLoaderName);
+	if (MInfo->Flags.CmdLine)
+		KPrintf("Kernel Args:%s\n",MInfo->CmdLine);
+	KPrintf("Starting Timer...");
 	InitTimer(1000);
-	SetColor(BLACK,GREEN);
-	WriteString("Done.\n");
-	SetColor(BLACK,BRIGHT_WHITE);
-	WriteString("Starting Keyboard...");
+	KPrintf("Done.\n");
+	KPrintf("Starting Keyboard...");
 	InitKeyboard();
-	SetColor(BLACK,GREEN);
-	WriteString("Done.\n");
-	WriteString("Starting Paging...");
+	KPrintf("Done.\n");
+	KPrintf("Starting Paging...");
 	InitialisePaging();
-	SetColor(BLACK,GREEN);
-	WriteString("Done.\n");
-	SetColor(BLACK,BRIGHT_WHITE);
+	KPrintf("Done.\n");
 	asm volatile ("sti");
 	u32i* Pointer = (u32i*) 0xA0000000;
 	u32i DoPageFault = *Pointer;

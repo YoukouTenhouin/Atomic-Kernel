@@ -25,7 +25,7 @@
 #include <kstdlib/kio.h>
 #include <assembly.h>
 
-u64i Tick = 0;
+volatile u64i Tick = 0;
 
 static void TimerCallback(RegistersType Regs)
 {

@@ -148,15 +148,12 @@ void PageFault(RegistersType Registers)
 	int User = Registers.ErrorCode & 0x4;
 	int Reserved = Registers.ErrorCode & 0x8;
 	int ID = Registers.ErrorCode & 10;
-	WriteString("Page Fault at 0x");
-	WriteNumber(FaultingAddress,16);
-	WriteString("(");
+	KPrintf("Page Fault at 0x%x (",FaultingAddress);
 	if ( Present ) WriteString("Present ");
 	if ( ReadWrite ) WriteString("Read-only ");
 	if ( User ) WriteString("User");
 	if ( Reserved ) WriteString("Reserved");
-	WriteChar(')');
-	NewLine();
+	KPrintf(")\n");
 	KPanic("Page Fault");
 }	
 	

@@ -1,4 +1,4 @@
-/* videodriver.c --> 显卡驱动的实现 */
+/* videodriver.c --> VGA显卡驱动的实现 */
 /* Copyright (c) 1998 著作权由Chapaev所有。著作权人保留一切权利。
  * 
  * 这份授权条款，在使用者符合以下三条件的情形下，授予使用者使用及再散播本
@@ -62,11 +62,7 @@ ScrollScreen()
 void WriteHex(u32i n) //直接从jamesm那复制的
 {
     s32i tmp;
-
-   WriteString("0x");
-
     char noZeroes = 1;
-
     int i;
     for (i = 28; i > 0; i -= 4)
     {
@@ -87,7 +83,6 @@ void WriteHex(u32i n) //直接从jamesm那复制的
             WriteChar( tmp+'0' );
         }
     }
-  
     tmp = n & 0xF;
     if (tmp >= 0xA)
     {
@@ -97,16 +92,12 @@ void WriteHex(u32i n) //直接从jamesm那复制的
     {
         WriteChar (tmp+'0');
     }
-
 }
 
 void
-WriteNumber(s32i Number,s32i Base)
+WriteDec(u32i Number)
 {
-	if ( Base == 16 )
-		WriteHex(Number);
- 	else
-		WriteString(NumberToString(Number,Base));
+	WriteString(NumberToString(Number,10));
 }
 
 void
@@ -145,7 +136,7 @@ WriteChar(char A)
 void
 SetColor(COLOUR BG,COLOUR FG)
 {
-	Color = (s8i) (BG<<4|FG);
+	Color = (s8i)(BG<<4|FG);
 }
 
 void
