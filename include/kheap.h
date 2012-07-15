@@ -24,13 +24,32 @@
 #ifndef __ATOMIC_KHEAP_H__
 #define __ATOMIC_KHEAP_H__
 
+#define HEAP_MAGIC 0X123890AB
+
 #include <types.h>
+
+typedef struct
+{
+	u32i Magic;
+	u32i Size;
+	boolean InUse;
+} BlockHeader;
+
+typedef struct
+{
+	u32i Magic;
+	BlockHeader* Head;
+} BlockFooter;
 
 u32i KmallocIntenal(u32i Size,s32i Aligned,u32i* Physical);
 u32i KmallocAligned(u32i Size);
 u32i KmallocPhysical(u32i Size,u32i* Physical);
 u32i KmallocAlignedPhysical(u32i Size,u32i* Physical);
 u32i Kmalloc(u32i Size);
+/*u32i AllocMemory(u32i Size);
+void Free(u32i Address,u32i Size);
+void KFree(void* Pointer);
+void KHeapInit();*/
 
 #endif //__ATOMIC_KHEAP_H__
 

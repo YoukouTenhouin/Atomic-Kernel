@@ -28,32 +28,39 @@
 extern u32i end;
 u32i PlacementAddress = (u32i) &end;
 
-//HeapList Kernel;
-//HeapList KFree;
+//extern HeapListEntry* FreeList;
 
 /*void
 KHeapInit()
 {
-	Kernel = NewHeapList();
-	KFree = NewHeapList();
+	HeapListInit();
+	BlockHeader* Head = FreeList[1].Address;
+	BlockFooter* Foot = FreeList[1].Address + FreeList[1].Size - sizeof(BlockFooter);
+	Head->Magic = 0xC0FFEE;
+	Heap->InUse = false;
+	Head->Size = 4096000 - sizeof(BlockHeader) - sizeof(BlockFooter);
+	Foot->Magic = 0xCOFFEE;
+	Foot->Head = Head;
 }
 */
-u32i AllocMemory(u32i Size)
-{
-	u32i Temp = PlacementAddress;
-	PlacementAddress += Size;
-	return Temp;
-}
-
 u32i KmallocIntenal(u32i Size,s32i Align,u32i* Physical)
 {
+	/*u32i TempAddress = PlacementAddress;
+	u32i AllocSize = Size;
+	if ( Align == 1 && (TempAddress & 0xFFFFF000)) {
+		TempAddress &= 0xFFFFF000;
+		TempAddress += 0x1000;
+		AllocSize += */
 	if ( Align == 1 && (PlacementAddress & 0xFFFFF000)) {
 		PlacementAddress &= 0xFFFFF000;
 		PlacementAddress += 0x1000;
-	} if ( Physical ) {
+	}
+	if ( Physical ) {
 		*Physical = PlacementAddress;
 	}
-	return AllocMemory(Size);
+	u32i tmp = PlacementAddress;
+	PlacementAddress += Size;
+	return tmp;
 }
 
 u32i KmallocAligned(u32i Size)

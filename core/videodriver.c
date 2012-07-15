@@ -61,6 +61,7 @@ ScrollScreen()
 
 void WriteHex(u32i n) //直接从jamesm那复制的
 {
+	WriteString("0x");
     s32i tmp;
     char noZeroes = 1;
     int i;
@@ -75,7 +76,7 @@ void WriteHex(u32i n) //直接从jamesm那复制的
         if (tmp >= 0xA)
         {
             noZeroes = 0;
-            WriteChar (tmp-0xA+'a' );
+            WriteChar (tmp-0xA+'A' );
         }
         else
         {
@@ -86,7 +87,7 @@ void WriteHex(u32i n) //直接从jamesm那复制的
     tmp = n & 0xF;
     if (tmp >= 0xA)
     {
-        WriteChar (tmp-0xA+'a');
+        WriteChar (tmp-0xA+'A');
     }
     else
     {

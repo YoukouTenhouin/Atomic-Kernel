@@ -25,6 +25,7 @@
 #include <kcommon.h>
 #include <kheap.h>
 #include <kstdlib/string.h>
+#include <kstdlib/kio.h>
 
 PageDirectoryType* KernelDirectory = 0;
 PageDirectoryType* CurrentDirectory = 0;

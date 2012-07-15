@@ -33,6 +33,7 @@ static void TimerCallback(RegistersType Regs)
 //	WriteString("Tick:");
 //	WriteNumber(Tick,10);
 //	NewLine();
+	KPrintf("Tick:%ld",Tick);
 }
 
 void InitTimer(u32i Frequency)

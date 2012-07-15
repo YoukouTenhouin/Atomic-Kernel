@@ -91,6 +91,8 @@ typedef struct
 	u32i InterfaceLength;
 } MultibootVBEMode;
 
+extern u32i __text,__data,__bss,__end;
+
 typedef struct
 {
 	MultibootInfoFlags Flags;
@@ -121,13 +123,16 @@ kmain(MultibootInfoStruct* MInfo,u32i magic )
 	SetColor(BLACK,BRIGHT_WHITE);
 	KPrintf("This is Atomic Kernel 12213A\nTest for KPrintf:\n");
 	KPrintf("Dec:%d\nHex:%x\nStr:%s\nChar:%c\n",12345,0xc0ffee,"Hello World",'a');
+	KPrintf("==========Kernel Info==========\n");
+	KPrintf("Text:%x,Data:%x,Bss:%x,End:%x\n",&__text,&__data,&__bss,&__end);
 	if (MInfo->Flags.MemoryInfo)
 		KPrintf("Memory:Lower %x Upper %x\n",
 			MInfo->MemInfo.Lower,MInfo->MemInfo.Upper);
 	if (MInfo->Flags.BootLoaderName)
 		KPrintf("BootLoader:%s\n",MInfo->BootLoaderName);
-	if (MInfo->Flags.CmdLine)
-		KPrintf("Kernel Args:%s\n",MInfo->CmdLine);
+//	if (MInfo->Flags.CmdLine)
+//		KPrintf("Kernel Args:%s\n",MInfo->CmdLine); buggy
+	KPrintf("===============================\n");
 	KPrintf("Starting Timer...");
 	InitTimer(1000);
 	KPrintf("Done.\n");
@@ -138,8 +143,8 @@ kmain(MultibootInfoStruct* MInfo,u32i magic )
 	InitialisePaging();
 	KPrintf("Done.\n");
 	asm volatile ("sti");
-	u32i* Pointer = (u32i*) 0xA0000000;
-	u32i DoPageFault = *Pointer;
+//	u32i* Pointer = (u32i*) 0xA0000000;
+//	u32i DoPageFault = *Pointer;
 	while(1);
 }
 
