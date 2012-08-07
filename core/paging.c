@@ -26,13 +26,24 @@
 #include <kheap.h>
 #include <kstdlib/string.h>
 
-PageDirectoryType* KernelDirectory = 0;
+#define NULL 0
+
+typedef struct UnusedPage
+{
+	u32i HowMany;
+	struct UnusedPage* Next;
+} UnusedPageType;
+
+PageDirectoryType* KernelDirectory;
 PageDirectoryType* CurrentDirectory = 0;
 
 u32i* Frames;
 u32i NFrames;
 
+UnusedPageType* UnusedPages = NULL;
+
 extern u32i PlacementAddress;
+static u32i FreePage;
 
 #define INDEX_FROM_BIT(a) (a/(8*4))
 #define OFFSET_FROM_BIT(a) (a%(8*4))
@@ -66,12 +77,12 @@ static u32i FirstFrame()
 	for ( u32i i = 0 ; i < INDEX_FROM_BIT(NFrames) ; i++ ){
 		if ( Frames[i] != 0xFFFFFFFF ) {
 			for ( u32i j = 0 ; j < 32 ; j++ ) {
-				u32i ToTest = 0x1 << j;
-				if ( !(Frames[i]&ToTest) ){
+				if ( !(Frames[i]&(0x1<<j)) ){
 					return i*4*8+j;
 				}
 			}
 		}
+		
 	}
 }
 
@@ -104,22 +115,27 @@ void InitialisePaging()
 	NFrames = MemEndPage / 0x1000;
 	Frames = (u32i*)Kmalloc(INDEX_FROM_BIT(NFrames));
 	memset(Frames,0,INDEX_FROM_BIT(NFrames));
-	KernelDirectory = (PageDirectoryType*)KmallocAligned(sizeof(PageDirectoryType));
+	KernelDirectory = KmallocAligned(sizeof(PageDirectoryType));
 	memset(KernelDirectory,0,sizeof(PageDirectoryType));
 	CurrentDirectory = KernelDirectory;
 	for ( int i = 0 ; i < PlacementAddress ; i += 0x1000 )
-		AllocFrame(GetPage(i,1,KernelDirectory),0,0);
+		AllocFrame(GetPage(i,1,KernelDirectory),0,1);
+	for ( int i = 0xBF000000 ; i < 0xC0100000 ; i += 0x1000 )
+		AllocFrame(GetPage(i,1,KernelDirectory),0,1);
 	RegisterInterruptHandler(14,PageFault);
 	SwitchPageDirectory(KernelDirectory);
+	/* Set Free Page */
+	FreePage = 0xC0000000;
 }
 
 void SwitchPageDirectory(PageDirectoryType* Directory)
 {
 	CurrentDirectory = Directory;
-	asm volatile("mov %0,%%cr3"::"r"(&Directory->TablesPhysical));
+	asm volatile("mov %0,%%cr3"::"r"(&(Directory->TablesPhysical)));
 	u32i cr0;
 	asm volatile("mov %%cr0,%0":"=r"(cr0));
 	cr0 |= 0x80000000;
+//	while(1); //0x00101fd3
 	asm volatile("mov %0,%%cr0"::"r"(cr0));
 }
 
@@ -143,20 +159,64 @@ void PageFault(RegistersType Registers)
 {
 	u32i FaultingAddress;
 	asm volatile("mov %%cr2,%0" : "=r" (FaultingAddress));
-	int Present = ! (Registers.ErrorCode & 0x1);
+	int Present = (Registers.ErrorCode & 0x1);
 	int ReadWrite = Registers.ErrorCode & 0x2;
 	int User = Registers.ErrorCode & 0x4;
 	int Reserved = Registers.ErrorCode & 0x8;
 	int ID = Registers.ErrorCode & 10;
-	WriteString("Page Fault at 0x");
-	WriteNumber(FaultingAddress,16);
-	WriteString("(");
-	if ( Present ) WriteString("Present ");
-	if ( ReadWrite ) WriteString("Read-only ");
-	if ( User ) WriteString("User");
-	if ( Reserved ) WriteString("Reserved");
-	WriteChar(')');
-	NewLine();
-	KPanic("Page Fault");
-}	
-	
+	KPrintf("Page Fault: %x ( ",FaultingAddress);
+	if ( Present ) KPrintf("Present ");
+	if ( ReadWrite ) KPrintf("Read-only ");
+	if ( User ) KPrintf("User");
+	if ( Reserved ) KPrintf("Reserved");
+	KPrintf(")\n"); 
+	PageType* Page = GetPage(FaultingAddress,1,KernelDirectory);
+	AllocFrame(Page,1,1);
+//	KPanic("Page Fault");
+}
+
+void
+MapPage(u32i Address)
+{
+	AllocFrame(GetPage(Address,1,CurrentDirectory),1,1);
+}
+
+void*
+FindFreePages(u32i HowMany)
+{
+	UnusedPageType* ret = UnusedPages;
+	while(ret->HowMany<HowMany&&ret->Next!=NULL)
+		ret = ret->Next;
+	return ret;
+}
+
+void*
+GetFreePages(u32i HowMany)
+{
+	UnusedPageType* ret;
+	if ((ret = FindFreePages(HowMany))!=NULL)
+	{
+		/* Delete From Unused Page List */
+		/* Find Previous One */
+		UnusedPageType* Previous = FreePage;
+		while(Previous->Next!=ret)
+			Previous = Previous->Next;
+		Previous->Next = ret->Next;
+		return ret;
+	}
+	ret = FreePage;
+	FreePage += HowMany*0x1000;
+	return ret;
+}
+
+void
+ReturnPages(void* Address,u32i HowMany)
+{
+	UnusedPageType* ToInsert = Address;
+	ToInsert->HowMany = HowMany;
+	UnusedPageType* Previous = FreePage;
+	while ( Previous->Next->HowMany < HowMany && Previous->Next!=NULL )
+		Previous = Previous->Next;
+	ToInsert->Next = Previous->Next;
+	Previous->Next = ToInsert;
+}

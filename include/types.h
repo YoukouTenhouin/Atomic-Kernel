@@ -33,5 +33,8 @@ typedef signed short s16i;
 typedef unsigned char u8i;
 typedef signed char s8i;
 typedef char* string;
+typedef u8i boolean;
+#define true 1
+#define false 0
 
 #endif //__ATOMIC_TYPES_H__

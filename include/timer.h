@@ -26,5 +26,7 @@
 #include <types.h>
 
 void InitTimer(u32i);
+void WaitS(u32i);
+void Wait10M(u32i);
 
 #endif

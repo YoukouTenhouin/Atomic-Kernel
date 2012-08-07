@@ -25,45 +25,54 @@
 #include <types.h>
 #include <kstdlib/algorithm.h>
 #include <assembly.h>
+#include <kstdlib/string.h>
+#include <timer.h>
 
 static s32i PositionX = 0,PositionY = 0;
 static u8i* VideoRam = (u8i*) 0xb8000;
 static s8i Color;
 
+//Doesn't work
+int
+FindFirstCleanLine()
+{
+	for( int i = 0 ;i < 25 ; i++ )
+		for ( int j = 0; j < 80 ; j+=2 ){
+			if ( VideoRam[j] != 0 ) break;
+			else if ( j == 158 ) return i;
+		}
+	PositionY = 24;
+	NewLine();
+}
+
+void
+VideoInit()
+{
+	ClearScreen();
+}
+
 void
 ClearScreen()
 {
-	for( int i = 1 ; i != 80*25 ; i++ )
-		WriteChar(' ');
-	PositionX = 0;
-	PositionY = 0;
+	memset(0xb8000,0,80*25*2);
+	PositionY = PositionX = 0;
 }
-
 
 void
 ScrollScreen()
 {
-	u8i* P1 = (u8i*) 0xb8000;
-	u8i* P2 = (u8i*) 0xb8000;
-	P2+=160;
-	for (int i = 0; i != 80*25*2-160; i++) {
-		*P1=*P2;
-		P1++;
-		P2++;
-	}
-	while (P1!=P2) {
-		*P1 = 0;
-		P1++;
-		*P1 = 0x07;
-		P1++;
-	}
+	memcpy(0xb8000,0xb8000+160,80*24*2);
+	memset(0xb8000+80*24*2,0,80*2);
+	PositionX = 0;
+	PositionY--;
 }
 
-void WriteHex(u32i n) //直接从jamesm那复制的
+void
+WriteHex(u32i n) //直接从jamesm那复制的
 {
     s32i tmp;
 
-   WriteString("0x");
+    WriteString("0x");
 
     char noZeroes = 1;
 
@@ -79,7 +88,7 @@ void WriteHex(u32i n) //直接从jamesm那复制的
         if (tmp >= 0xA)
         {
             noZeroes = 0;
-            WriteChar (tmp-0xA+'a' );
+            WriteChar (tmp-0xA+'A' );
         }
         else
         {
@@ -91,7 +100,7 @@ void WriteHex(u32i n) //直接从jamesm那复制的
     tmp = n & 0xF;
     if (tmp >= 0xA)
     {
-        WriteChar (tmp-0xA+'a');
+        WriteChar (tmp-0xA+'A');
     }
     else
     {
@@ -101,12 +110,9 @@ void WriteHex(u32i n) //直接从jamesm那复制的
 }
 
 void
-WriteNumber(s32i Number,s32i Base)
+WriteDec(u32i Number)
 {
-	if ( Base == 16 )
-		WriteHex(Number);
- 	else
-		WriteString(NumberToString(Number,Base));
+	WriteString(NumberToString(Number,10));
 }
 
 void
@@ -137,9 +143,11 @@ WriteChar(char A)
 		VideoRam[PositionY*80*2+PositionX*2] = A;
 		VideoRam[PositionY*80*2+PositionX*2+1] = Color;
 		PositionX++;
+		if (PositionX > 80) NewLine();
 		break;
 	}
 	UpdateCursor();
+	if (PositionY >= 25) ScrollScreen();
 }
 
 void
@@ -151,7 +159,8 @@ SetColor(COLOUR BG,COLOUR FG)
 void
 NewLine()
 {
-	if ( PositionY != 25 ) {
+	VideoRam[PositionX*2+PositionY*80*2+1] = Color;
+	if ( PositionY < 25 ) {
 		PositionY++;
 		PositionX = 0;
 	} else {
@@ -173,10 +182,8 @@ void SetPosition(s32i X,s32i Y)
 
 void UpdateCursor()
 {
-	outb(0x3d4,0x0e);
-	outb(0x3d5,((PositionX+PositionY*80)>>8)&0xff);
-	outb(0x3d4,0x0f);
-	outb(0x3d5,((PositionX+PositionY*80))&0xff);
+	VideoRam[PositionX*2+PositionY*80*2+1] = WHITE<<4|BLACK;
+	VideoRam[PositionX*2+PositionY*80*2+3] = Color;
 }
 
 void MoveCursor(s32i Offset)

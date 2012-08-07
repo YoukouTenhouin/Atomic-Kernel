@@ -26,6 +26,6 @@
 
 #include <types.h>
 
-char* NumberToString(s32i,s32i);
+char* NumberToString(u32i,s32i);
 
 #endif 

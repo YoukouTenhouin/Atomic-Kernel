@@ -1,4 +1,4 @@
-/* kheap.c --> 内核堆分配函数的实现 */
+/* kheap.c --> 内核堆分配接口 */
 /* Copyright (c) 1998 著作权由Chapaev所有。著作权人保留一切权利。
  * 
  * 这份授权条款，在使用者符合以下三条件的情形下，授予使用者使用及再散播本
@@ -22,40 +22,64 @@
  * 不负任何责任，即在该种使用已获事前告知可能会造成此类损害的情形下亦然。*/
 
 #include <kheap.h>
+#include <paging.h>
+#include <heap.h>
+#include <isr.h>
+
+#define NULL 0
 
 extern u32i end;
-u32i PlacementAddress = (u32i) &end;
+u32i PlacementAddress = (u32i)&end;
 
+boolean HeapInited = false;
 
-u32i KmallocIntenal(u32i Size,s32i Align,u32i* Physical)
+void
+HeapInit()
 {
-	if ( Align == 1 && (PlacementAddress & 0xFFFFF000)) {
-		PlacementAddress &= 0xFFFFF000;
-		PlacementAddress += 0x1000;
-	} if ( Physical ) {
-		*Physical = PlacementAddress;
-	}
-	u32i Temp = PlacementAddress;
-	PlacementAddress += Size;
-	return Temp;
+	heap_init(GetFreePages,NULL);
+	HeapInited = true;
 }
 
-u32i KmallocAligned(u32i Size)
+u32i
+KmallocIntenal(u32i Size,s32i Align,u32i* Physical)
+{
+	if ( Align == 1 && (PlacementAddress & 0xFFFFF000) ){
+		PlacementAddress &= 0xFFFFF000;
+		PlacementAddress += 0x1000;
+	}
+	if ( Physical ) *Physical = PlacementAddress;
+	u32i ret = PlacementAddress;
+	PlacementAddress += Size;
+	return ret;
+}	
+
+u32i
+KmallocAligned(u32i Size)
 {
 	return KmallocIntenal(Size,1,0);
 }
 
-u32i KmallocPhysical(u32i Size,u32i* Physical)
+u32i
+KmallocPhysical(u32i Size,u32i* Physical)
 {
 	return KmallocIntenal(Size,0,Physical);
 }
 
-u32i KmallocAlignedPhysical(u32i Size ,u32i* Physical)
+u32i
+KmallocAlignedPhysical(u32i Size ,u32i* Physical)
 {
 	return KmallocIntenal(Size,1,Physical);
 }
 
-u32i Kmalloc(u32i Size)
+u32i
+Kmalloc(u32i Size)
 {
-	return KmallocIntenal(Size,0,0);
+	if (!HeapInited) return KmallocIntenal(Size,0,0);
+	else return heap_malloc(Size);
+}
+
+void
+KFree(void* ToFree)
+{
+	return heap_free(ToFree);
 }

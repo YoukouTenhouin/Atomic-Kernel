@@ -1,4 +1,7 @@
-/* paging.h --> 分页相关物的声明 */
+/* heap.h --> 可移植堆的声明 */
+/* 移植方法：使用heap_init指定获取连续空闲页的函数(一次能获取PAGE_SIZE*how_many大小连续空间的函数)(必须)
+ * 及无内存处理函数(可选)
+ * 若有必要则更改PAGE_SIZE */
 /* Copyright (c) 1998 著作权由Chapaev所有。著作权人保留一切权利。
  * 
  * 这份授权条款，在使用者符合以下三条件的情形下，授予使用者使用及再散播本
@@ -20,42 +23,40 @@
  * 任何直接性、间接性、偶发性、特殊性、惩罚性或任何结果的损害（包括但不限
  * 于替代商品或劳务之购用、使用损失、资料损失、利益损失、业务中断等等），
  * 不负任何责任，即在该种使用已获事前告知可能会造成此类损害的情形下亦然。*/
+#ifndef	HEAP_H
+#define HEAP_H
 
-#ifndef __ATOMIC_PAGING_H__
-#define __ATOMIC_PAGING_H__
+#ifndef NULL
+#define NULL 0
+#endif	/* NULL */
 
-#include <isr.h>
+#define	PAGE_SIZE 0x1000 	/* 4KB */
 
-typedef struct Page
+typedef	unsigned int	u32;	/* ...Or not unsigned int */
+
+/* Free-list entry,also free memory */
+typedef struct free_list_entry
 {
-	u32i Present : 1;
-	u32i ReadWrite : 1;
-	u32i User : 1;
-	u32i Accessed : 1;
-	u32i Dirty : 1;
-	u32i Unused : 7;
-	u32i Frame : 20;
-} PageType;
+	struct free_list_entry* next; 	/* Pointer to next entry */
+} free_list_entry;
 
-typedef struct PageTable
+/* Block header */
+typedef struct
 {
-	PageType Pages[1024];
-} PageTableType;
+	u32 size:31; 		/* Size of block */
+	u32 in_use:1;		/* In use? */
+} header_t;
 
-typedef struct PageDirectory
-{
-	PageTableType* Tables[1024];
-	u32i TablesPhysical[1024];
-	u32i PhysicalAddress;
-} PageDirectoryType;
+/* Footer is a pointer to a header */
+typedef header_t*	footer_t;
 
-void InitialisePaging();
-void SwitchPageDirectory(PageDirectoryType* NewDirectory); 
-PageType* GetPage(u32i Address,int Make,PageDirectoryType* Directory);
-void PageFault(RegistersType Registers);
-void MapPage(u32i Address);
-void* GetFreePages(u32i HowMany);
-void ReturnPages(void* Address,u32i HowMany);
+/* Function type */
+typedef void	(*no_mem_handler_t)();
+typedef void*	(*get_free_pages_t)(int);
 
-#endif //__ATOMIC_PAGING_H__
-	
+/* Interfaces */
+void* heap_malloc(int size);
+void heap_free(void* address_to_free);
+void heap_init(get_free_pages_t get_free_pages_func,no_mem_handler_t handler);
+
+#endif	/* HEAP_H */

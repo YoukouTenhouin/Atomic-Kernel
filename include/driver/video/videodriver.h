@@ -27,15 +27,16 @@
 #include <types.h>
 
 typedef enum COLOUR_TAG {
-
 	BLACK, BLUE, GREEN, CYAN, RED, MAGENTA, BROWN, WHITE,
 	GRAY, LIGHT_BLUE, LIGHT_GREEN, LIGHT_CYAN,
 	LIGHT_RED, LIGHT_MAGENTA, YELLOW, BRIGHT_WHITE
 } COLOUR;
 
+void VideoInit();
 void WriteString(char*);
 void WriteChar(char);
-void WriteNumber(s32i,s32i);
+void WriteDec(u32i);
+void WriteHex(u32i);
 void SetColor(COLOUR,COLOUR);
 void NewLine();
 void ScrollScreen();

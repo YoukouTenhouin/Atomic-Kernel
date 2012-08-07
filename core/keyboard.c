@@ -25,6 +25,9 @@
 #include <isr.h>
 #include <kstdlib/kio.h>
 #include <assembly.h>
+#include <kcommon.h>
+#include <types.h>
+#include <keyboard.h>
 
 static u8i ShiftPressed = 0;
 static u8i CtrlPressed = 0;
@@ -53,8 +56,10 @@ pln()
 		/*38*/{0x0, 0x0}, {' ', ' '} };
 	if (ScanCode & 0x80)
 		return;
-	WriteChar(KeyMap[ScanCode&0x7f][UpperCase]);
+	WriteToKeyBuff(KeyMap[ScanCode&0x7f][UpperCase]);
 }
+
+
 
 static void
 ctl(void)
@@ -78,11 +83,15 @@ shf(void)
 static void
 cap(void)
 {
+	if (ScanCode & 0x80)
+		return;
 	UpperCase ^= 0x1;
 }
 
 static void
-fun(void){}
+fun(void){
+	asm volatile("int $0x80");
+}
 
 static void
 unp(void){}
@@ -98,7 +107,7 @@ static void KeyboardCallback(RegistersType Regs)
 		/*20*/pln, pln, pln, pln, pln, pln, pln, pln,
 		/*28*/pln, pln, shf, pln, pln, pln, pln, pln,
 		/*30*/pln, pln, pln, pln, pln, pln, shf, pln,
-		/*38*/alt, pln, unp, cap, fun, fun, fun, fun,
+		/*38*/alt, pln, cap, fun, fun, fun, fun, fun,
 		/*40*/fun, fun, fun, fun, fun, unp, unp, unp,
 		/*48*/unp, unp, unp, unp, unp, unp, unp, unp,
 		/*50*/unp, unp, unp, unp, unp, unp, unp, fun,

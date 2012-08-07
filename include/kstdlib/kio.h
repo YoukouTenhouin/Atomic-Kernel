@@ -24,7 +24,12 @@
 #ifndef __ATOMIC_KIO_H__
 #define __ATOMIC_KIO_H__
 
-//暂时懒得写printf,凑合一下
 #include <driver/video/videodriver.h>
+#include <types.h>
+
+void KPrintf(string Format,...);
+void GetStr(string Buffer);
+void GetLine(string Buffer);
+char GetChar();
 
 #endif

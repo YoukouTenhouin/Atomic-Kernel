@@ -25,18 +25,20 @@
 #include <kstdlib/kio.h>
 #include <assembly.h>
 
-u64i Tick = 0;
+volatile u64i Tick = 0;
+static u32i TimerFrequency;
 
-static void TimerCallback(RegistersType Regs)
+static
+void
+TimerCallback(RegistersType Regs)
 {
-	Tick++;
-//	WriteString("Tick:");
-//	WriteNumber(Tick,10);
-//	NewLine();
+	++Tick;
 }
 
-void InitTimer(u32i Frequency)
+void
+InitTimer(u32i Frequency)
 {
+	TimerFrequency = Frequency;
 	RegisterInterruptHandler(32,&TimerCallback);
 	u32i Divisor = 1193180 / Frequency;
 	outb(0x43,0x36);
@@ -44,4 +46,22 @@ void InitTimer(u32i Frequency)
 	u8i Upper = (u8i)((Divisor>>8) & 0xFF);
 	outb(0x40,Lower);
 	outb(0x40,Upper);
+	asm volatile("sti");
 }
+
+void
+WaitS(u32i Second)
+{
+	Second *= TimerFrequency;
+	u64i StartTick = Tick;
+	while ( Tick - StartTick < Second );
+}
+
+void
+Wait10M(u32i MilliSecond)
+{
+	MilliSecond *= TimerFrequency/100;
+	u64i StartTick = Tick;
+	while( Tick - StartTick < MilliSecond );
+}
+

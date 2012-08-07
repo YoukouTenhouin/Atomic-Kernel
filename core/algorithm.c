@@ -26,7 +26,7 @@
 
 //从网上照搬的算法
 char*
-NumberToString(s32i n,s32i base)
+NumberToString(u32i n,s32i base)
 {
 	register char *p;
 	register int minus;

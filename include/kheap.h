@@ -26,11 +26,21 @@
 
 #include <types.h>
 
+typedef struct
+{
+	u32i Magic;
+	u32i Size;
+	boolean InUse;
+} BlockHeader;
+
+//void HeapInit();
 u32i KmallocIntenal(u32i Size,s32i Aligned,u32i* Physical);
 u32i KmallocAligned(u32i Size);
 u32i KmallocPhysical(u32i Size,u32i* Physical);
 u32i KmallocAlignedPhysical(u32i Size,u32i* Physical);
 u32i Kmalloc(u32i Size);
+void HeapInit();
+void KFree(void* ToFree);
 
 #endif //__ATOMIC_KHEAP_H__
 

@@ -27,6 +27,7 @@
 #include <descriptor_tables.h>
 #include <timer.h>
 #include <paging.h>
+#include <kstdlib/string.h>
 
 void InitKeyboard();
 
@@ -38,28 +39,29 @@ kmain( void* mdb,u32i magic )
 		while(1);
 	}
 	InitDescriptorTables();
-	ClearScreen();
+	VideoInit();
 	SetColor(BLACK,BRIGHT_WHITE);
-	WriteString("This is Atomic Kernel 12213A\n");
-	WriteNumber(12345,10);
-	NewLine();
-	WriteString("Starting Timer...");
-	InitTimer(1000);
-	SetColor(BLACK,GREEN);
-	WriteString("Done.\n");
-	SetColor(BLACK,BRIGHT_WHITE);
-	WriteString("Starting Keyboard...");
+	KPrintf("This is Atomic Kernel 12715A\n");
+	KPrintf("Starting Timer...");
+	InitTimer(100);
+	KPrintf("Done.\n");
+	KPrintf("Starting Keyboard...");
 	InitKeyboard();
-	SetColor(BLACK,GREEN);
-	WriteString("Done.\n");
-	WriteString("Starting Paging...");
+	KPrintf("Done.\n");
+	KPrintf("Starting Paging...");
 	InitialisePaging();
-	SetColor(BLACK,GREEN);
-	WriteString("Done.\n");
-	SetColor(BLACK,BRIGHT_WHITE);
-	asm volatile ("sti");
-	u32i* Pointer = (u32i*) 0xA0000000;
-	u32i DoPageFault = *Pointer;
+	KPrintf("Done.\n");
+	KPrintf("Starting Heap...");
+	HeapInit();
+	KPrintf("Done.\n");
+	u32i *A,*B,*C;
+	A = Kmalloc(8);
+	B = Kmalloc(8);
+	KPrintf("A:%x,B:%x",A,B);
+	KFree(A);
+	KFree(B);
+	C = Kmalloc(16);
+	KPrintf("C:%x\n",C);
 	while(1);
 }
 
