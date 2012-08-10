@@ -1,40 +1,18 @@
-/* heap.c --> 可移植的简单堆实现
- * By Chapaev */
-/* Copyright (c) 1998 著作权由Chapaev所有。著作权人保留一切权利。
- * 
- * 这份授权条款，在使用者符合以下三条件的情形下，授予使用者使用及再散播本
- * 软件包装原始码及二进位可执行形式的权利，无论此包装是否经改作皆然：
- * 
- * * 对于本软件源代码的再散播，必须保留上述的版权宣告、此三条件表列，以
- *   及下述的免责声明。
- * * 对于本套件二进位可执行形式的再散播，必须连带以文件以及／或者其他附
- *   于散播包装中的媒介方式，重制上述之版权宣告、此三条件表列，以及下述
- *   的免责声明。
- * * 未获事前取得书面许可，不得使用本软件贡献者之名称，
- *   来为本软件之衍生物做任何表示支持、认可或推广、促销之行为。
- * 
- * 免责声明：本软件是由本软件之贡献者以现状（"as is"）提供，
- * 本软件包装不负任何明示或默示之担保责任，包括但不限于就适售性以及特定目
- * 的的适用性为默示性担保。加州大学董事会及本软件之贡献者，无论任何条件、
- * 无论成因或任何责任主义、无论此责任为因合约关系、无过失责任主义或因非违
- * 约之侵权（包括过失或其他原因等）而起，对于任何因使用本软件包装所产生的
- * 任何直接性、间接性、偶发性、特殊性、惩罚性或任何结果的损害（包括但不限
- * 于替代商品或劳务之购用、使用损失、资料损失、利益损失、业务中断等等），
- * 不负任何责任，即在该种使用已获事前告知可能会造成此类损害的情形下亦然。*/
+/* DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE */
+/* Version 2, December 2004 */
+/* Copyright (C) 2012 Chapaev <chapaev@fpscopycatresistance.org> */
+/* Everyone is permitted to copy and distribute verbatim or modifiedcopies of this license document, and changing it is allowed as longas the name is changed. */
+/* DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION */
+/* 0. You just DO WHAT THE F**K YOU WANT TO. */
+
 #include "heap.h"
+#include "heap_ifce.h"
 
 static void*	start;		/* Start of first page */
 static void*	end;		/* End of last page */
 
-static void*	first_block;	/* Start of the first block */
-static void*	last_block;	/* End of last block */
-
 static no_mem_handler_t		no_mem_handler;
 static get_free_pages_t		get_free_pages;
-
-typedef free_list_entry*	free_list_t;
-typedef free_list_t		free_list_position;
-typedef free_list_position	free_list_iterator;
 
 free_list_t	free_list;
 
@@ -64,6 +42,7 @@ free_list_iterator_forward(free_list_iterator* to_move)
 static void
 free_list_insert(header_t* block_to_insert)
 {
+	if ( free_list_find(block_to_insert) )  return; /* If block is already in list */
 	free_list_position prev = free_list;
 	/* Find previous one */
 	while ( prev->next != NULL && size_of_free_block(prev->next) < block_to_insert->size )
@@ -117,7 +96,7 @@ void*
 oom_get_free_pages(int how_many)
 {
 	if ( no_mem_handler != NULL ){
-		void* ret;
+		void* ret = NULL;
 		while( NULL == ret ){ /* No free pages yet */
 			no_mem_handler();
 			ret = get_free_pages(how_many);
@@ -141,17 +120,22 @@ heap_init(get_free_pages_t get_free_pages_func,
 	/* No memory... */
 	if ( NULL == start )
 		start = oom_get_free_pages(1);
-	/* End of heap */
+	/* End of current page */
 	end = start + PAGE_SIZE;
 
-	header_t* first_header = start + sizeof(free_list_entry);
-	footer_t* first_footer = end - sizeof(footer_t);
+	/* Protect area in start and end of pages */
+	void* prot_area_start	= start + P_SIZE;
+	void* prot_area_end	= end	+ P_SIZE;
+
+	*(void**)prot_area_start	= NULL;
+	*(void**)prot_area_end		= NULL;
+	
+	header_t* first_header = start + P_SIZE*2;
+	footer_t* first_footer = end - P_SIZE*2;
 	/* Initialise first block */
 	*first_footer = first_header;
 	first_header->size = PAGE_SIZE - sizeof(header_t) - sizeof(footer_t);
 	first_header->in_use = 0; /* Of couse it not in use */
-	first_block = first_header;
-	last_block = (void*)first_footer + sizeof(footer_t);
 	/* Now we initialise free list */
 	free_list = start;
 	free_list->next = (void*)first_header + sizeof(header_t);
@@ -161,35 +145,39 @@ heap_init(get_free_pages_t get_free_pages_func,
 /* Extend heap size
  * Return new block */
 header_t*
-extend_heap(u32 size_to_entend)
+extend_heap(u32 size_to_extend)
 {
 	/* Round up and change to page numbers */
-	if (size_to_entend & 0xFFFFF000)
-		size_to_entend = ((size_to_entend & 0xFFFFF000) / PAGE_SIZE) + 1;
+	if (size_to_extend & 0xFFFFF000)
+		size_to_extend = ((size_to_extend & 0xFFFFF000) / PAGE_SIZE) + 1;
 	/* Get no pages */
-	void* new_pages = get_free_pages(size_to_entend);
+	void* new_pages = get_free_pages(size_to_extend);
 	/* oops,No free pages,try to get some */
 	if ( NULL == new_pages )
-		new_pages = oom_get_free_pages(size_to_entend);
+		new_pages = oom_get_free_pages(size_to_extend);
 	/* Create new block */
 	header_t* new_header = new_pages;
 	footer_t* new_footer = (void*)(new_header + PAGE_SIZE - sizeof(footer_t));
 	/* A flat memory! */
 	if ( end == new_pages ){
-		footer_t* orig_footer = end - sizeof(footer_t);
-		header_t* orig_header = *orig_footer;
-		if(!(orig_header->in_use)){ /* How lucy we are! */
-			new_header = orig_header;
-			*new_footer = new_header;
-		}
+		footer_t* orig_footer = end - P_SIZE*2; /* Jump protect area */
+		header_t* orig_header = NULL==orig_footer?NULL:*orig_footer;
+		if(orig_header!=NULL&&!(orig_header->in_use))
+			merge_block(orig_header,new_header); /* Merge it */
+	} else {					     /* We have to constrct new page */
+		void* protect_area_start	= new_pages;
+		*(void**)protect_area_start	= NULL;
+		new_header += P_SIZE;
 	}
+	void*	protect_area_end	= new_pages + size_to_extend * PAGE_SIZE - P_SIZE; 
+	*(void**)protect_area_end	= NULL;
 	/* Now we construct new block */
 	new_header->size = (void*)new_footer - (void*)new_header - sizeof(header_t);
 	new_header->in_use = 0;
 	/* Insert it to free list */
 	free_list_insert(new_header);
-	/* Update start and end */
-	last_block = new_footer + sizeof(footer_t);
+	/* Update end pointer */
+	end = new_pages + size_to_extend * PAGE_SIZE;
 	
 	return new_header;
 }	
@@ -261,10 +249,10 @@ free_memory(void* address_to_free)
 	footer_t* prev_footer = (void*)curr_header - sizeof(footer_t);
 	header_t* prev_header = *prev_footer;
 	/* Previous one isn't in use so we merge it */
-	if ( first_block != (void*)curr_header && !(prev_header->in_use) ) 
+	if ( NULL != (void*)prev_header && !(prev_header->in_use) ) 
 		curr_header = merge_block(prev_header,curr_header);
 	/* Same to next one */
-	if ( last_block != (void*)curr_footer + sizeof(footer_t) && !(next_header->in_use) )
+	if ( NULL != *(void**)next_header && !(next_header->in_use) )
 		merge_block(curr_header,next_header);
 	/* This block isn't in use now */
 	curr_header->in_use = 0;

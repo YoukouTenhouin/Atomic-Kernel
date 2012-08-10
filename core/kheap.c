@@ -23,7 +23,7 @@
 
 #include <kheap.h>
 #include <paging.h>
-#include <heap.h>
+#include <heap_ifce.h>
 #include <isr.h>
 
 #define NULL 0
